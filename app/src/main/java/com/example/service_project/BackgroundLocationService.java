@@ -13,18 +13,34 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BackgroundLocationService extends Service {
     private final LocationServiceBinder binder = new LocationServiceBinder();
     private static final String TAG = "BackgroundLocationServi";
     private LocationListener mLocationListener;
     private LocationManager mLocationManager;
-    private NotificationManager notificationManager;
-    private final int LOCATION_INTERVAL = 500;
-    private final int LOCATION_DISTANCE = 10;
+    //private NotificationManager notificationManager;
+    //private final int LOCATION_INTERVAL = 500;
+    //private final int LOCATION_DISTANCE = 10;
     double lognitude;
+    final FirebaseFirestore db =FirebaseFirestore.getInstance();
+    long now;
+    Date date;
+    String time_now;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -48,6 +64,31 @@ public class BackgroundLocationService extends Service {
         public void onLocationChanged(Location location) {
             mLastLocation = location;
             Log.d("debug", "LocationChanged: " + location);
+            now = System.currentTimeMillis();
+            date = new Date(now);
+            SimpleDateFormat time = new SimpleDateFormat("yyyy년 MM월 dd일 HH시 mm분 ss초");
+            time_now = time.format(date);
+
+            Map<String, Object> user = new HashMap<>();
+            user.put("longitude", location.getLongitude());
+            user.put("latitude", location.getLatitude());
+            user.put("createdAt", time_now);
+
+            db.collection("USERS/test1/locations")
+                    .add(user)
+                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>(){
+
+                        @Override
+                        public void onSuccess(DocumentReference documentReference) {
+                            //Log.d("debug", "latitude : " + String.valueOf(latitude));
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.d("debug", "Error adding", e);
+                        }
+                    });
         }
 
         @Override
