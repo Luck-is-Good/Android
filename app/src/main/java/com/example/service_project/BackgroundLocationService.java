@@ -33,10 +33,6 @@ public class BackgroundLocationService extends Service {
     private static final String TAG = "BackgroundLocationServi";
     private LocationListener mLocationListener;
     private LocationManager mLocationManager;
-    //private NotificationManager notificationManager;
-    //private final int LOCATION_INTERVAL = 500;
-    //private final int LOCATION_DISTANCE = 10;
-    double lognitude;
     final FirebaseFirestore db =FirebaseFirestore.getInstance();
     long now;
     Date date;

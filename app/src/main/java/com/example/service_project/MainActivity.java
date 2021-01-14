@@ -1,14 +1,16 @@
 package com.example.service_project;
 
+import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.net.Uri;
+
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
+
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -18,7 +20,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.example.service_project.R;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
@@ -28,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button startButton;
     Button stopButton;
     TextView statusTextView;
+    final FirebaseFirestore db =FirebaseFirestore.getInstance();
 
     public com.example.service_project.BackgroundLocationService gpsService;
     public boolean mTracking = false;
@@ -37,6 +48,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if ( ContextCompat.checkSelfPermission( this, Manifest.permission.READ_PHONE_STATE ) != PackageManager.PERMISSION_GRANTED ) {
+            String deviceId = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+            Map<String, Object> ID = new HashMap<>();
+            ID.put("device_id", deviceId);
+
+            db.collection("USERS").document("test1")
+                    .set(ID, SetOptions.merge())
+                    .addOnSuccessListener(new OnSuccessListener<Void>(){
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            //Log.d("debug", "latitude : " + String.valueOf(latitude));
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                                              @Override
+                                              public void onFailure(@NonNull Exception e) {
+
+                                              }
+                                          });
+        }
         //initialize views
         setWidgetIds();
         //prepare service
