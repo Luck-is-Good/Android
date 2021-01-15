@@ -1,100 +1,52 @@
 package com.example.service_project;
 
-import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-
 import android.os.Bundle;
 import android.os.IBinder;
-import android.provider.Settings;
-
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.SetOptions;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class UsingActivity extends AppCompatActivity {
 
     private final int PERMISSION_REQUEST_CODE = 200;
-    Button startButton;
-    //Button stopButton;
-    TextView statusTextView;
-    final FirebaseFirestore db =FirebaseFirestore.getInstance();
+    Button stopButton;
+    //Button restartButton;
 
     public com.example.service_project.BackgroundLocationService gpsService;
-    public boolean mTracking = false;
+    public boolean mTracking = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.using);
+        stopButton = (Button) findViewById(R.id.stopButton);
+        //restartButton = (Button) findViewById(R.id.restartButton);
 
-        if ( ContextCompat.checkSelfPermission( this, Manifest.permission.READ_PHONE_STATE ) != PackageManager.PERMISSION_GRANTED ) {
-            String deviceId = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
-            Map<String, Object> ID = new HashMap<>();
-            ID.put("device_id", deviceId);
-
-            db.collection("USERS").document("test1")
-                    .set(ID, SetOptions.merge())
-                    .addOnSuccessListener(new OnSuccessListener<Void>(){
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            //Log.d("debug", "latitude : " + String.valueOf(latitude));
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-
-                        }
-                    });
-        }
-        //initialize views
-        setWidgetIds();
-        //prepare service
         final Intent intent = new Intent(this.getApplication(), com.example.service_project.BackgroundLocationService.class);
         this.getApplication().startService(intent);
         this.getApplication().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
-    }
 
-    private void setWidgetIds() {
-        startButton = (Button) findViewById(R.id.startButton);
-        //stopButton = (Button) findViewById(R.id.stopButton);
-        statusTextView = (TextView) findViewById(R.id.statusTextView);
-
-        startButton.setOnClickListener(this);
-        //stopButton.setOnClickListener(this);
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.startButton:
-                startTracking();
-                break;
-            //case R.id.stopButton:
-                //stopTracking();
-                //break;
-        }
+        stopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!mTracking) {
+                    startTracking();
+                } else {
+                    stopTracking();
+                }
+            }
+        });
     }
 
     public void startTracking() {
@@ -105,11 +57,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Intent intent = new Intent(getApplicationContext(), UsingActivity.class);
             startActivity(intent);
             //toggleButtons();
+            stopButton.setBackgroundResource(R.drawable.stop);
         } else {
             ActivityCompat.requestPermissions(this, new String[]{ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
         }
     }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -125,22 +77,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void stopTracking() {
         mTracking = false;
         gpsService.stopTracking();
-        toggleButtons();
+        //toggleButtons();
+        stopButton.setBackgroundResource(R.drawable.start);
     }
 
-    private void toggleButtons() {
-        startButton.setEnabled(!mTracking);
-        //stopButton.setEnabled(mTracking);
-        statusTextView.setText((mTracking) ? "TRACKING" : "GPS Ready");
-    }
-
+    /*private void toggleButtons() {
+        restartButton.setEnabled(!mTracking);
+        stopButton.setEnabled(mTracking);
+        //statusTextView.setText((mTracking) ? "TRACKING" : "GPS Ready");
+    }*/
     private ServiceConnection serviceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             String name = className.getClassName();
             if (name.endsWith("BackgroundLocationService")) {
                 gpsService = ((com.example.service_project.BackgroundLocationService.LocationServiceBinder) service).getService();
-                startButton.setEnabled(true);
-                statusTextView.setText("GPS Ready");
+                stopButton.setEnabled(true);
+                //statusTextView.setText("GPS Ready");
             }
         }
 
