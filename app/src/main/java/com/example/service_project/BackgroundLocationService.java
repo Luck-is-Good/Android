@@ -140,9 +140,9 @@ public class BackgroundLocationService extends Service {
         mLocationListener = new LocationListener(LocationManager.NETWORK_PROVIDER);
         try {
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                    0, 0, mLocationListener);
+                    100000, 0, mLocationListener);
             mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-                    0, 0, mLocationListener);
+                    100000, 0, mLocationListener);
             Log.d("debug", String.valueOf(mLocationListener.getLognitude()));
         } catch (java.lang.SecurityException ex) {
             // Log.i(TAG, "fail to request location update, ignore", ex);

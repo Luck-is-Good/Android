@@ -34,10 +34,8 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+    Button ok;
     private final int PERMISSION_REQUEST_CODE = 200;
-    Button startButton;
-    //Button stopButton;
-    TextView statusTextView;
     final FirebaseFirestore db =FirebaseFirestore.getInstance();
 
     public com.example.service_project.BackgroundLocationService gpsService;
@@ -48,7 +46,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if ( ContextCompat.checkSelfPermission( this, Manifest.permission.READ_PHONE_STATE ) != PackageManager.PERMISSION_GRANTED ) {
+        if ( ContextCompat.checkSelfPermission( this, Manifest.permission.READ_PHONE_STATE )
+                != PackageManager.PERMISSION_GRANTED ) {
             String deviceId = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
             Map<String, Object> ID = new HashMap<>();
             ID.put("device_id", deviceId);
@@ -68,52 +67,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                     });
         }
-        //initialize views
-        setWidgetIds();
-        //prepare service
+
         final Intent intent = new Intent(this.getApplication(), com.example.service_project.BackgroundLocationService.class);
         this.getApplication().startService(intent);
         this.getApplication().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
-    }
 
-    private void setWidgetIds() {
-        startButton = (Button) findViewById(R.id.startButton);
-        //stopButton = (Button) findViewById(R.id.stopButton);
-        statusTextView = (TextView) findViewById(R.id.statusTextView);
-
-        startButton.setOnClickListener(this);
-        //stopButton.setOnClickListener(this);
+        ok = (Button) findViewById(R.id.ok);
+        ok.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.startButton:
-                startTracking();
-                break;
-            //case R.id.stopButton:
-                //stopTracking();
-                //break;
-        }
-    }
-
-    public void startTracking() {
-        //check for permission
-        if (ContextCompat.checkSelfPermission(getApplicationContext(), ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            gpsService.startTracking();
-            mTracking = true;
-            Intent intent = new Intent(getApplicationContext(), UsingActivity.class);
-            startActivity(intent);
-            //toggleButtons();
-        } else {
-            ActivityCompat.requestPermissions(this, new String[]{ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
-        }
+        startTracking();
+        Intent intent = new Intent(getApplicationContext(), UsingActivity.class);
+        startActivity(intent);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
         if (requestCode == PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0
                     && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -122,16 +94,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public void stopTracking() {
-        mTracking = false;
-        gpsService.stopTracking();
-        toggleButtons();
-    }
-
-    private void toggleButtons() {
-        startButton.setEnabled(!mTracking);
-        //stopButton.setEnabled(mTracking);
-        statusTextView.setText((mTracking) ? "TRACKING" : "GPS Ready");
+    public void startTracking() {
+        //check for permission
+        if (ContextCompat.checkSelfPermission(getApplicationContext(), ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            gpsService.startTracking();
+            mTracking = true;
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
+        }
     }
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -139,8 +110,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             String name = className.getClassName();
             if (name.endsWith("BackgroundLocationService")) {
                 gpsService = ((com.example.service_project.BackgroundLocationService.LocationServiceBinder) service).getService();
-                startButton.setEnabled(true);
-                statusTextView.setText("GPS Ready");
             }
         }
 
