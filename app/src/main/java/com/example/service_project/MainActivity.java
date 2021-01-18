@@ -78,9 +78,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        startTracking();
         Intent intent = new Intent(getApplicationContext(), UsingActivity.class);
         startActivity(intent);
+        startTracking();
     }
 
     @Override
