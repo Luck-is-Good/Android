@@ -16,22 +16,26 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 public class UsingActivity extends AppCompatActivity {
 
     private final int PERMISSION_REQUEST_CODE = 200;
-    Button button;
+    Button button, delete;
     TextView statusTextView2;
-
     public com.example.service_project.BackgroundLocationService gpsService;
     public boolean mTracking = true;
+
+    final FirebaseFirestore db =FirebaseFirestore.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.using);
         button = (Button) findViewById(R.id.button);
+        delete = (Button) findViewById(R.id.delete);
         statusTextView2 = (TextView) findViewById(R.id.statusTextView2);
 
         final Intent intent = new Intent(this.getApplication(), com.example.service_project.BackgroundLocationService.class);
@@ -46,6 +50,15 @@ public class UsingActivity extends AppCompatActivity {
                 } else {
                     stopTracking();
                 }
+            }
+        });
+
+        delete.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                String path = ((MainActivity)MainActivity.context_main).path;
+                db.collection("USER").document(path).delete();
+                stopTracking();
             }
         });
     }
