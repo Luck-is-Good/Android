@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         context_main = this;
 
+        //deviceId 생성
         if ( ContextCompat.checkSelfPermission( this, Manifest.permission.READ_PHONE_STATE )
                 != PackageManager.PERMISSION_GRANTED ) {
             deviceId = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -76,22 +77,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ok.setOnClickListener(this);
     }
 
+    //ok버튼을 클릭하면 device에서 입력하는 번호와 맞는 user_id가 있는지 검사
     @Override
     public void onClick(View v) {
-        Log.d("debug", "user_id : "+ user_id.getText().toString());
         db.collection("USERS")
-                .whereEqualTo("user_id" ,  user_id.getText().toString() )
+                .whereEqualTo("user_id" ,  user_id.getText().toString() ) //쿼리문으로 일치하는 user_id부분이 있는지 검사
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        //Log.d("debug",   " db에서 얻어온 데이터 => " );
                         path = null;
+
+                        //일치하는 user_id를 찾은 경우
                         if(task.isSuccessful()){
                             QuerySnapshot document = task.getResult();
                             for (QueryDocumentSnapshot i : task.getResult()) {
+                                //사용자 이름 받아옴
                                 path = i.getId();
                             }
+
+                            //위에서 받아온 사용자 이름을 경로로 지정해서 device_id firestore에 저장
                                 Map<String, Object> ID = new HashMap<>();
                                 ID.put("device_id", deviceId);
                                 db.collection("USERS").document(path)
@@ -110,11 +115,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                         });
 
                         }else {
+                            //맞는 user_id 찾지 못한 경우
                             Log.d("debug", "Error getting documents: ", task.getException());
                         }
                     }
                 });
 
+        //user_id검사해서 맞으면 사용중화면으로 넘어가도록
         Intent intent = new Intent(getApplicationContext(), UsingActivity.class);
         startActivity(intent);
         startTracking();
