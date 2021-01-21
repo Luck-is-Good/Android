@@ -47,6 +47,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button ok;
     EditText user_id;
     String deviceId;
+
+    public static Context context_main;
+    public String path;
     private final int PERMISSION_REQUEST_CODE = 200;
     final FirebaseFirestore db =FirebaseFirestore.getInstance();
 
@@ -57,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        context_main = this;
 
         if ( ContextCompat.checkSelfPermission( this, Manifest.permission.READ_PHONE_STATE )
                 != PackageManager.PERMISSION_GRANTED ) {
@@ -82,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         //Log.d("debug",   " db에서 얻어온 데이터 => " );
-                        String path = null;
+                        path = null;
                         if(task.isSuccessful()){
                             QuerySnapshot document = task.getResult();
                             for (QueryDocumentSnapshot i : task.getResult()) {

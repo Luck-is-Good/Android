@@ -70,7 +70,8 @@ public class BackgroundLocationService extends Service {
             user.put("latitude", location.getLatitude());
             user.put("createdAt", time_now);
 
-            db.collection("USERS/test1/locations")
+            String path = ((MainActivity)MainActivity.context_main).path;
+            db.collection("USERS/" + path + "/locations")
                     .add(user)
                     .addOnSuccessListener(new OnSuccessListener<DocumentReference>(){
 
