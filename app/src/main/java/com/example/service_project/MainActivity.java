@@ -1,6 +1,8 @@
 package com.example.service_project;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -8,7 +10,9 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.provider.Settings;
 
 import android.util.Log;
@@ -117,8 +121,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                             }
                                         });
                                 //user_id검사해서 맞으면 사용중화면으로 넘어가도록
-                                Intent intent = new Intent(getApplicationContext(), UsingActivity.class);
-                                startActivity(intent);
                                 startTracking();
                             }
                         }else {
@@ -126,8 +128,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                     }
                 });
-
-
     }
 
     @Override
@@ -145,6 +145,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (ContextCompat.checkSelfPermission(getApplicationContext(), ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             gpsService.startTracking();
             mTracking = true;
+            Intent intent = new Intent(getApplicationContext(), UsingActivity.class);
+            startActivity(intent);
         } else {
             ActivityCompat.requestPermissions(this,
                     new String[]{ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
