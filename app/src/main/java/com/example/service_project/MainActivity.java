@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -95,8 +96,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 //사용자 이름 받아옴
                                 path = i.getId();
                             }
-
-                            //위에서 받아온 사용자 이름을 경로로 지정해서 device_id firestore에 저장
+                            if(path == null)
+                            {
+                                Toast.makeText(MainActivity.this, "Retry!!", Toast.LENGTH_SHORT).show();
+                            }
+                            else{
+                                //위에서 받아온 사용자 이름을 경로로 지정해서 device_id firestore에 저장
                                 Map<String, Object> ID = new HashMap<>();
                                 ID.put("device_id", deviceId);
                                 db.collection("USERS").document(path)
@@ -113,6 +118,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                                             }
                                         });
+//user_id검사해서 맞으면 사용중화면으로 넘어가도록
+                                Intent intent = new Intent(getApplicationContext(), UsingActivity.class);
+                                startActivity(intent);
+                                startTracking();
+                            }
 
                         }else {
                             //맞는 user_id 찾지 못한 경우
@@ -121,10 +131,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 });
 
-        //user_id검사해서 맞으면 사용중화면으로 넘어가도록
-        Intent intent = new Intent(getApplicationContext(), UsingActivity.class);
-        startActivity(intent);
-        startTracking();
+
     }
 
     @Override
