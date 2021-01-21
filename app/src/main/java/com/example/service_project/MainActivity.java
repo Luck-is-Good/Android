@@ -78,6 +78,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
+        ActivityCompat.requestPermissions(this,
+                new String[]{ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
         startTracking();
         Intent intent = new Intent(getApplicationContext(), UsingActivity.class);
         startActivity(intent);
@@ -87,8 +89,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 startTracking();
             }
         }
