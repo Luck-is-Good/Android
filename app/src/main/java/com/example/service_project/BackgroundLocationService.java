@@ -70,7 +70,8 @@ public class BackgroundLocationService extends Service {
             user.put("latitude", location.getLatitude());
             user.put("createdAt", time_now);
 
-            db.collection("USERS/test1/locations")
+            String path = ((MainActivity)MainActivity.context_main).path;
+            db.collection("USERS/" + path + "/locations")
                     .add(user)
                     .addOnSuccessListener(new OnSuccessListener<DocumentReference>(){
 
@@ -140,9 +141,9 @@ public class BackgroundLocationService extends Service {
         mLocationListener = new LocationListener(LocationManager.NETWORK_PROVIDER);
         try {
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                    100000, 0, mLocationListener);
+                    10000, 0, mLocationListener);
             mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-                    100000, 0, mLocationListener);
+                    10000, 0, mLocationListener);
             Log.d("debug", String.valueOf(mLocationListener.getLognitude()));
         } catch (java.lang.SecurityException ex) {
             // Log.i(TAG, "fail to request location update, ignore", ex);
