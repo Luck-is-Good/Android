@@ -88,19 +88,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         path = null;
-
-                        //일치하는 user_id를 찾은 경우
                         if(task.isSuccessful()){
                             QuerySnapshot document = task.getResult();
                             for (QueryDocumentSnapshot i : task.getResult()) {
                                 //사용자 이름 받아옴
                                 path = i.getId();
                             }
-                            if(path == null)
-                            {
+                            //일치하는 user_id를 찾지 못한 경우
+                            if(path == null) {
                                 Toast.makeText(MainActivity.this, "Retry!!", Toast.LENGTH_SHORT).show();
-                            }
-                            else{
+                            } else{
+                                //일치하는 user_id 찾음
                                 //위에서 받아온 사용자 이름을 경로로 지정해서 device_id firestore에 저장
                                 Map<String, Object> ID = new HashMap<>();
                                 ID.put("device_id", deviceId);
@@ -118,14 +116,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                                             }
                                         });
-//user_id검사해서 맞으면 사용중화면으로 넘어가도록
+                                //user_id검사해서 맞으면 사용중화면으로 넘어가도록
                                 Intent intent = new Intent(getApplicationContext(), UsingActivity.class);
                                 startActivity(intent);
                                 startTracking();
                             }
-
                         }else {
-                            //맞는 user_id 찾지 못한 경우
                             Log.d("debug", "Error getting documents: ", task.getException());
                         }
                     }
