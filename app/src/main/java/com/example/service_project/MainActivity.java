@@ -171,8 +171,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                                             }
                                         });
-
-                                //정보를 다 저장하고,
+                                user_id.setText(null);                                //정보를 다 저장하고,
                                 //사용중지화면으로 넘어가도록(web-app에서 위치정보를 확인후에 사용중 클릭하도록)
                                 stopTracking();
                             }

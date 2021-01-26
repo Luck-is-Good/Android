@@ -2,6 +2,7 @@ package com.example.service_project;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
@@ -13,6 +14,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -22,6 +24,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.File;
 import java.util.Collection;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
@@ -29,7 +32,7 @@ import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 public class UsingActivity extends AppCompatActivity {
 
     private final int PERMISSION_REQUEST_CODE = 200;
-    Button button;
+    Button button, reset;
     TextView statusTextView2;
     public com.example.service_project.BackgroundLocationService gpsService;
     public boolean mTracking = true;
@@ -41,6 +44,7 @@ public class UsingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.using);
         button = (Button) findViewById(R.id.button);
+        reset = (Button) findViewById((R.id.reset));
         statusTextView2 = (TextView) findViewById(R.id.statusTextView2);
 
         final Intent intent = new Intent(this.getApplication(), com.example.service_project.BackgroundLocationService.class);
@@ -57,8 +61,56 @@ public class UsingActivity extends AppCompatActivity {
                 }
             }
         });
-    }
 
+        reset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(UsingActivity.this);
+                builder.setMessage("사용자 정보가 초기화됩니다. 초기화를 진행할까요?");
+                builder.setTitle("초기화")
+                        .setCancelable(false)
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                finish();
+                                File cache = getCacheDir();
+                                File appDir = new File(cache.getParent());
+                                if(appDir.exists()){
+                                    String[] children = appDir.list();
+                                    for(String s : children) {
+                                        if(!s.equals("lib") && !s.equals("files")) {
+                                            deleteDir(new File(appDir, s));
+                                        }
+                                    }
+                                }
+
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        });
+                AlertDialog alert = builder.create();
+                alert.setTitle("초기화");
+                alert.show();
+
+            }
+        });
+    }
+    private static boolean deleteDir(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+        }
+        return dir.delete();
+    }
     public void onBackPressed() {
         //using페이지에서 뒤로가기 동작 막음
     }
