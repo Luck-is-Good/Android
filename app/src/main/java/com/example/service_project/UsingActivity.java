@@ -59,6 +59,9 @@ public class UsingActivity extends AppCompatActivity {
         });
     }
 
+    public void onBackPressed() {
+        //using페이지에서 뒤로가기 동작 막음
+    }
     public void startTracking() {
         //check for permission
         if (ContextCompat.checkSelfPermission(getApplicationContext(), ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
