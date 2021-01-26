@@ -22,6 +22,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -141,9 +142,9 @@ public class BackgroundLocationService extends Service {
         mLocationListener = new LocationListener(LocationManager.NETWORK_PROVIDER);
         try {
             mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                    10000, 0, mLocationListener);
+                    1000, 0, mLocationListener);
             mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
-                    10000, 0, mLocationListener);
+                    1000, 0, mLocationListener);
             Log.d("debug", String.valueOf(mLocationListener.getLognitude()));
         } catch (java.lang.SecurityException ex) {
             // Log.i(TAG, "fail to request location update, ignore", ex);

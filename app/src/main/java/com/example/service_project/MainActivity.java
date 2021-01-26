@@ -9,6 +9,10 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -41,6 +45,8 @@ import com.google.firebase.firestore.SetOptions;
 
 import org.w3c.dom.Text;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,14 +64,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final int PERMISSION_REQUEST_CODE = 200;
     final FirebaseFirestore db =FirebaseFirestore.getInstance();
 
+    double longitude;
+    double latitude;
     public com.example.service_project.BackgroundLocationService gpsService;
     public boolean mTracking = false;
+    long now;
+    Date date;
+    String time_now;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context_main = this;
+
+        //현재위치의 위도,경도 저장하기
+        final LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if ( Build.VERSION.SDK_INT >= 23 &&
+                ContextCompat.checkSelfPermission( getApplicationContext(), android.Manifest.permission.ACCESS_FINE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
+            ActivityCompat.requestPermissions( MainActivity.this, new String[] {  android.Manifest.permission.ACCESS_FINE_LOCATION  },
+                    0 );
+        }
+        else{
+            //Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            Location location = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            longitude = location.getLongitude();
+            latitude = location.getLatitude();
+        }
+
+        //현재시간 저장
+        now = System.currentTimeMillis();
+        date = new Date(now);
+        SimpleDateFormat time = new SimpleDateFormat("yyyy년 MM월 dd일 HH시 mm분 ss초");
+        time_now = time.format(date);
 
         //deviceId 생성
         if ( ContextCompat.checkSelfPermission( this, Manifest.permission.READ_PHONE_STATE )
@@ -120,8 +151,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                                             }
                                         });
-                                //user_id검사해서 맞으면 사용중화면으로 넘어가도록
-                                startTracking();
+
+                                //위에서 받은 위치정보를 해당 사용자에게 저장
+                                Map<String, Object> Loc = new HashMap<>();
+                                Loc.put("longitude", longitude);
+                                Loc.put("latitude", latitude);
+                                Loc.put("createdAt", time_now);
+                                db.collection("USERS/"+path+"/locations").document()
+                                        .set(Loc, SetOptions.merge())
+                                        .addOnSuccessListener(new OnSuccessListener<Void>(){
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                //Log.d("debug", "latitude : " + String.valueOf(latitude));
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+
+                                            }
+                                        });
+
+                                //정보를 다 저장하고,
+                                //사용중지화면으로 넘어가도록(web-app에서 위치정보를 확인후에 사용중 클릭하도록)
+                                stopTracking();
                             }
                         }else {
                             Log.d("debug", "Error getting documents: ", task.getException());
@@ -152,7 +205,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     new String[]{ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
         }
     }
-
+    public void stopTracking() {
+        //mTracking = false;
+        //gpsService.stopTracking();
+        Intent intent = new Intent(getApplicationContext(), UsingActivity.class);
+        startActivity(intent);
+    }
     private ServiceConnection serviceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName className, IBinder service) {
             String name = className.getClassName();

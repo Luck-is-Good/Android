@@ -7,6 +7,7 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -16,26 +17,30 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.Collection;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
 
 public class UsingActivity extends AppCompatActivity {
 
     private final int PERMISSION_REQUEST_CODE = 200;
-    Button button, delete;
+    Button button;
     TextView statusTextView2;
     public com.example.service_project.BackgroundLocationService gpsService;
     public boolean mTracking = true;
 
-    final FirebaseFirestore db =FirebaseFirestore.getInstance();
+    final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.using);
         button = (Button) findViewById(R.id.button);
-        delete = (Button) findViewById(R.id.delete);
         statusTextView2 = (TextView) findViewById(R.id.statusTextView2);
 
         final Intent intent = new Intent(this.getApplication(), com.example.service_project.BackgroundLocationService.class);
@@ -46,19 +51,10 @@ public class UsingActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(!mTracking) {
-                    startTracking();
-                } else {
                     stopTracking();
+                } else {
+                    startTracking();
                 }
-            }
-        });
-
-        delete.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                String path = ((MainActivity)MainActivity.context_main).path;
-                db.collection("USER").document(path).delete();
-                stopTracking();
             }
         });
     }
@@ -67,7 +63,7 @@ public class UsingActivity extends AppCompatActivity {
         //check for permission
         if (ContextCompat.checkSelfPermission(getApplicationContext(), ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             gpsService.startTracking();
-            mTracking = true;
+            mTracking = false;
             statusTextView2.setText("사용자의 위치가 다른 사용자에게\n표시되고 있습니다.");
             button.setBackgroundResource(R.drawable.stop);
         } else {
@@ -77,7 +73,7 @@ public class UsingActivity extends AppCompatActivity {
     }
 
     public void stopTracking() {
-        mTracking = false;
+        mTracking = true;
         gpsService.stopTracking();
         statusTextView2.setText("위치 표시가 중지되었습니다.\n");
         button.setBackgroundResource(R.drawable.start);
