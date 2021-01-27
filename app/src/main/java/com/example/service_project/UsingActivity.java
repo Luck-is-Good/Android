@@ -5,9 +5,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -37,14 +39,18 @@ import java.io.File;
 import java.util.Collection;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import android.content.SharedPreferences;
 
 public class UsingActivity extends AppCompatActivity {
+
+    private SharedPreferences preferences;
+    private SharedPreferences.Editor editor;
 
     private final int PERMISSION_REQUEST_CODE = 200;
     Button button, reset;
     TextView statusTextView2;
     public com.example.service_project.BackgroundLocationService gpsService;
-    public boolean mTracking = true;
+    public boolean mTracking = false;
 
 
     final FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -60,6 +66,10 @@ public class UsingActivity extends AppCompatActivity {
         final Intent intent = new Intent(this.getApplication(), com.example.service_project.BackgroundLocationService.class);
         this.getApplication().startService(intent);
         this.getApplication().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        editor = preferences.edit();
+
 
         //MainActivity에서 받아온 path 변수에 접근
         String path = ((MainActivity)MainActivity.context_main).path;
@@ -115,6 +125,14 @@ public class UsingActivity extends AppCompatActivity {
                     }
                 });
 
+        boolean Tracking = preferences.getBoolean("Track", false);
+        if(Tracking){
+            statusTextView2.setText("사용자의 위치가 다른 사용자에게\n표시되고 있습니다.");
+            button.setBackgroundResource(R.drawable.stop);
+        } else {
+            statusTextView2.setText("위치 표시가 중지되었습니다.\n");
+            button.setBackgroundResource(R.drawable.start);
+        }
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -188,8 +206,11 @@ public class UsingActivity extends AppCompatActivity {
     public void startTracking() {
         //check for permission
         if (ContextCompat.checkSelfPermission(getApplicationContext(), ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            gpsService.startTracking();
             mTracking = false;
+            gpsService.startTracking();
+            //앱 종료 후 다시 시작했을 때, start버튼으로 유지하기 위해 Track을 true값으로 남겨놓기
+            editor.putBoolean("Track", true);
+            editor.apply();
             statusTextView2.setText("사용자의 위치가 다른 사용자에게\n표시되고 있습니다.");
             button.setBackgroundResource(R.drawable.stop);
         } else {
@@ -201,10 +222,10 @@ public class UsingActivity extends AppCompatActivity {
     public void stopTracking() {
         mTracking = true;
         gpsService.stopTracking();
+        editor.putBoolean("Track", false);
+        editor.apply();
         statusTextView2.setText("위치 표시가 중지되었습니다.\n");
         button.setBackgroundResource(R.drawable.start);
-
-
     }
 
     @Override

@@ -223,8 +223,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
     public void stopTracking() {
-        //mTracking = false;
-        //gpsService.stopTracking();
+        mTracking = false;
+        gpsService.stopTracking();
         Intent intent = new Intent(getApplicationContext(), UsingActivity.class);
         startActivity(intent);
     }
