@@ -14,15 +14,24 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.File;
 import java.util.Collection;
@@ -36,6 +45,8 @@ public class UsingActivity extends AppCompatActivity {
     TextView statusTextView2;
     public com.example.service_project.BackgroundLocationService gpsService;
     public boolean mTracking = true;
+    //MainActivity에서 받아온 path 변수에 접근
+    String path = ((MainActivity)MainActivity.context_main).path;
 
     final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -50,6 +61,58 @@ public class UsingActivity extends AppCompatActivity {
         final Intent intent = new Intent(this.getApplication(), com.example.service_project.BackgroundLocationService.class);
         this.getApplication().startService(intent);
         this.getApplication().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+
+        final DocumentReference docRef = db.collection("USERS").document(path);
+        docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable DocumentSnapshot snapshot, @Nullable FirebaseFirestoreException error) {
+                        if(error != null) {
+                            Log.d("debug", "Listen Failed", error);
+                            return;
+                        }
+                        if(snapshot != null && snapshot.exists()) {
+                            Log.d("debug", "Current Data : " + snapshot.getData());
+                        } else {
+                            Log.d("debug", "Current Data : null");
+                            File cache = getCacheDir();
+                            File appDir = new File(cache.getParent());
+                            if(appDir.exists()){
+                                String[] children = appDir.list();
+                                for(String s : children) {
+                                    if(!s.equals("lib") && !s.equals("files")) {
+                                        deleteDir(new File(appDir, s));
+                                    }
+                                }
+                            }
+                            moveTaskToBack(true);
+                            finish();
+                            android.os.Process.killProcess(android.os.Process.myPid());
+                        }
+                        /*for(QueryDocumentSnapshot i : value) {
+                            Log.d("debug", "document snapshot start!!-----");
+                            Log.d("debug", "i.getId ==> " + i.getId());
+                            Log.d("debug", "path ==> " + path);
+                            if(path.equals(i.getId())) {
+                                Log.d("debug", "document delete!!!-----");
+                                File cache = getCacheDir();
+                                File appDir = new File(cache.getParent());
+                                if(appDir.exists()){
+                                    String[] children = appDir.list();
+                                    for(String s : children) {
+                                        if(!s.equals("lib") && !s.equals("files")) {
+                                            deleteDir(new File(appDir, s));
+                                        }
+                                    }
+                                }
+                                moveTaskToBack(true);
+                                finish();
+                                android.os.Process.killProcess(android.os.Process.myPid());
+
+                            }
+                        }*/
+                    }
+                });
+
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,13 +129,14 @@ public class UsingActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(UsingActivity.this);
-                builder.setMessage("사용자 정보가 초기화됩니다. 초기화를 진행할까요?");
+                builder.setMessage("사용자 정보가 초기화됩니다. 초기화를 진행할까요? " +
+                        "초기화후에는 앱이 종료됩니다. 서비스를 다시 사용하려면 앱을 재실행해주세요");
                 builder.setTitle("초기화")
                         .setCancelable(false)
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                finish();
+                                //앱 캐시 지우기
                                 File cache = getCacheDir();
                                 File appDir = new File(cache.getParent());
                                 if(appDir.exists()){
@@ -83,6 +147,10 @@ public class UsingActivity extends AppCompatActivity {
                                         }
                                     }
                                 }
+                                //UsingActivity 뿐만 아니라 앱 전체 종료
+                                moveTaskToBack(true);
+                                finish();
+                                android.os.Process.killProcess(android.os.Process.myPid());
 
                             }
                         })
@@ -111,6 +179,7 @@ public class UsingActivity extends AppCompatActivity {
         }
         return dir.delete();
     }
+
     public void onBackPressed() {
         //using페이지에서 뒤로가기 동작 막음
     }
@@ -132,6 +201,8 @@ public class UsingActivity extends AppCompatActivity {
         gpsService.stopTracking();
         statusTextView2.setText("위치 표시가 중지되었습니다.\n");
         button.setBackgroundResource(R.drawable.start);
+
+
     }
 
     @Override
