@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 
 import android.util.Log;
@@ -52,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
+import android.content.SharedPreferences;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -72,12 +74,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Date date;
     String time_now;
 
+    private SharedPreferences preferences;
+    private SharedPreferences.Editor editor;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context_main = this;
 
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        editor = preferences.edit();
+
+        String Path = preferences.getString("Path", null);
+        if(Path != null){
+            Log.d("debug" , "Preference => " + Path);
+            path = Path;
+            Intent intent = new Intent(getApplicationContext(), UsingActivity.class);
+            startActivity(intent);
+        }
         //현재위치의 위도,경도 저장하기
         final LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if ( Build.VERSION.SDK_INT >= 23 &&
@@ -128,6 +143,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             for (QueryDocumentSnapshot i : task.getResult()) {
                                 //사용자 이름 받아옴
                                 path = i.getId();
+                                editor.putString("Path", path);
+                                editor.apply();
                             }
                             //일치하는 user_id를 찾지 못한 경우
                             if(path == null) {

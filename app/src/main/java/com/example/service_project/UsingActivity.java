@@ -45,8 +45,7 @@ public class UsingActivity extends AppCompatActivity {
     TextView statusTextView2;
     public com.example.service_project.BackgroundLocationService gpsService;
     public boolean mTracking = true;
-    //MainActivity에서 받아온 path 변수에 접근
-    String path = ((MainActivity)MainActivity.context_main).path;
+
 
     final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -62,6 +61,9 @@ public class UsingActivity extends AppCompatActivity {
         this.getApplication().startService(intent);
         this.getApplication().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
 
+        //MainActivity에서 받아온 path 변수에 접근
+        String path = ((MainActivity)MainActivity.context_main).path;
+        Log.d("debug", "UsingActivity path => " + path);
         final DocumentReference docRef = db.collection("USERS").document(path);
         docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
                     @Override
