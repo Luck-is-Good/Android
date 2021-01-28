@@ -138,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         path = null;
+                        Log.d("debug", "firebase success!");
                         if(task.isSuccessful()){
                             QuerySnapshot document = task.getResult();
                             for (QueryDocumentSnapshot i : task.getResult()) {

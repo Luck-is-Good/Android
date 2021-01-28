@@ -37,7 +37,7 @@ dependencies {
     annotationProcessor 'android.arch.persistence.room:compiler:1.1.1'
     implementation 'android.arch.lifecycle:livedata:1.1.1'
 
-    implementation platform('com.google.firebase:firebase-bom:26.2.0')
-    implementation 'com.google.firebase:firebase-analytics'
+    implementation platform('com.google.firebase:firebase-bom:26.3.0')
     implementation 'com.android.support:multidex:1.0.3'
+    implementation 'com.google.firebase:firebase-analytics'
 }

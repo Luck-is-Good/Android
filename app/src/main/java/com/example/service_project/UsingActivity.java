@@ -168,9 +168,9 @@ public class UsingActivity extends AppCompatActivity {
                                     }
                                 }
                                 //UsingActivity 뿐만 아니라 앱 전체 종료
-                                moveTaskToBack(true);
+                                // moveTaskToBack(true);
                                 finish();
-                                android.os.Process.killProcess(android.os.Process.myPid());
+                                //android.os.Process.killProcess(android.os.Process.myPid());
 
                             }
                         })
